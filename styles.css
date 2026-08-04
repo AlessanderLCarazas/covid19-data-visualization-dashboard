@@ -1,0 +1,715 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* OPCIÓN A: Layout dominante para Vista 1 (Recomendado para coronas) */
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr; /* Paneles 3 y 2 a la izquierda, panel1 a la derecha */
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas: 
+        "panel3 panel1"
+        "panel2 panel1";
+}
+
+
+.panel {
+    border: 2px solid #333;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel1 {
+    grid-area: panel1;
+    min-height: 700px; /* Aumentado significativamente para las coronas */
+}
+
+.panel2 {
+    grid-area: panel2;
+    min-height: 350px; /* Altura mínima aumentada */
+}
+
+.panel3 {
+    grid-area: panel3;
+    min-height: 350px; /* Altura mínima aumentada */
+}
+
+.panel-title {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+    z-index: 10;
+}
+
+.panel-controls {
+    position: absolute;
+    top: 35px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.panel-controls label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+}
+
+.panel-controls select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+    min-width: 150px;
+}
+
+.compare-btn {
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.compare-btn:hover {
+    background: #0056b3;
+}
+
+.compare-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Estilos para controles de animación */
+.animation-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(240, 248, 255, 0.9);
+    border: 1px solid #b3d9ff;
+    border-radius: 6px;
+    margin-left: 12px;
+}
+
+.animation-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.play-btn {
+    background: #28a745;
+    color: white;
+}
+
+.play-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.pause-btn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.pause-btn:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+.speed-select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 11px;
+    background: white;
+    min-width: 100px;
+}
+
+.current-date {
+    font-size: 12px;
+    font-weight: bold;
+    color: #dc143c;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #dc143c;
+    min-width: 120px;
+    text-align: center;
+}
+
+.panel-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    position: relative;
+    padding: 10px; /* Padding interno para mejor visualización */
+}
+
+svg {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    /* Tamaños mínimos para SVGs más grandes */
+    min-width: 400px;
+    min-height: 300px;
+}
+
+/* SVG específico para Vista 1 (coronas) - más grande */
+#svg1 {
+    min-width: 600px !important;
+    min-height: 500px !important;
+}
+
+/* Estilos para manejar contenido grande en cada vista */
+.panel-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Clase para hacer contenido con zoom independiente */
+.zoomable {
+    transform-origin: center center;
+    transition: transform 0.3s ease;
+}
+
+/* Asegurar que cada panel mantenga su área */
+.panel1, .panel2, .panel3 {
+    min-height: 0;
+    min-width: 0;
+}
+
+/* Estilos para la ventana emergente (modal) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.close {
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.compare-selects {
+    margin-bottom: 20px;
+}
+
+.select-group {
+    margin-bottom: 15px;
+}
+
+.select-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.select-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #545b62;
+}
+
+.btn-confirm {
+    background: #28a745;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #218838;
+}
+
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.compare-message {
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.compare-message.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.compare-message.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.compare-message.warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.compare-message.processing {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.compare-message p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efectos para barras animadas */
+.barra-animada {
+    transition: all 0.3s ease;
+}
+
+.barra-crecimiento {
+    animation: crecerBarra 0.5s ease-out;
+}
+
+@keyframes crecerBarra {
+    from {
+        stroke-width: 0;
+        opacity: 0;
+    }
+    to {
+        stroke-width: 4;
+        opacity: 1;
+    }
+}
+
+/* RESPONSIVE: Ajustes para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+        grid-template-rows: 1fr 0.5fr 0.5fr;
+        grid-template-areas: 
+            "panel1"
+            "panel2"
+            "panel3";
+    }
+    
+    .panel1 {
+        min-height: 500px;
+    }
+    
+    .panel2, .panel3 {
+        min-height: 250px;
+    }
+    
+    .panel-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .animation-controls {
+        margin-left: 0;
+        flex-wrap: wrap;
+    }
+}
+
+/* MODO FULLSCREEN para Vista 1 (opcional) */
+.panel1.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    background: white;
+}
+
+.panel1.fullscreen #svg1 {
+    min-width: 90vw !important;
+    min-height: 90vh !important;
+}
+
+/* ========== CSS PARA VENTANA DE COMPARACIÓN ========== */
+
+/* Ventana principal de comparación */
+.comparison-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenido de la ventana */
+.comparison-content {
+    background: white;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 1200px;
+    height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Header de la ventana */
+.comparison-header {
+    background: linear-gradient(135deg, #2E86AB, #A23B72);
+    color: white;
+    padding: 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comparison-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.comparison-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.comparison-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Controles de la ventana */
+.comparison-controls {
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.time-controls, .metric-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.comparison-controls label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.comparison-controls select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background: white;
+    font-size: 14px;
+}
+
+/* Contenedor de gráficos */
+.comparison-charts {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h3 {
+    margin: 0 0 20px 0;
+    color: #495057;
+    font-size: 18px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+/* SVG de los gráficos */
+#timelineChart, #countriesChart {
+    display: block;
+    margin: 0 auto;
+    background: #fafafa;
+    border-radius: 5px;
+}
+
+/* Estadísticas comparativas */
+.comparison-stats {
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #dee2e6;
+}
+
+.stats-continent1, .stats-continent2 {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-width: 250px;
+}
+
+.stats-continent1 {
+    border-left: 5px solid #2E86AB;
+}
+
+.stats-continent2 {
+    border-left: 5px solid #A23B72;
+}
+
+.stats-continent1 h4, .stats-continent2 h4 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.stats-continent1 h4 {
+    color: #2E86AB;
+}
+
+.stats-continent2 h4 {
+    color: #A23B72;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #6c757d;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #495057;
+}
+
+.stats-vs {
+    font-size: 36px;
+    font-weight: bold;
+    color: #6c757d;
+    margin: 0 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .comparison-content {
+        width: 95%;
+        height: 95%;
+    }
+    
+    .comparison-header h2 {
+        font-size: 18px;
+    }
+    
+    .comparison-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .comparison-stats {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .stats-vs {
+        font-size: 24px;
+        margin: 10px 0;
+    }
+}
+
+/* Animaciones */
+.comparison-window {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.comparison-content {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: scale(0.9) translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}

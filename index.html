@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Final TCD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos para el selector de continentes - OCULTOS */
+        .continent-display {
+            display: none; /* OCULTAR COMPLETAMENTE */
+        }
+
+        .continent-display.no-selection {
+            display: none; /* OCULTAR COMPLETAMENTE */
+        }
+
+        .continent-selector-hidden {
+            display: none;
+        }
+
+        .continent-selector-readonly {
+            display: none; /* OCULTAR COMPLETAMENTE */
+        }
+
+        .map-instruction {
+            display: none; /* OCULTAR COMPLETAMENTE */
+        }
+
+        .continent-selection-area {
+            display: none; /* OCULTAR TODA EL ÁREA */
+        }
+
+        .reset-btn {
+            display: none; /* OCULTAR BOTÓN RESET */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel panel1">
+            <div class="panel-title">Control Principal</div>
+            <div class="panel-controls">
+
+                <!-- ÁREA DE SELECCIÓN DE CONTINENTE - COMPLETAMENTE OCULTA PERO FUNCIONAL -->
+                <div class="continent-selection-area" style="display: none;">
+                    <div class="map-instruction">
+                        🗺️ Haga click en un continente del mapa geográfico para seleccionar
+                    </div>
+                    <div id="continentDisplay" class="continent-display no-selection">
+                        Ningún continente seleccionado
+                        <button id="resetSelection" class="reset-btn" style="display: none;">✕ Limpiar</button>
+                    </div>
+                </div>
+
+                <!-- SELECTOR OCULTO PERO FUNCIONAL (PARA MANTENER COMPATIBILIDAD) -->
+                <select id="continentSelect" style="display: none;">
+                    <option value="">Cargando...</option>
+                </select>
+
+                <button id="compareBtn" class="compare-btn">Comparar</button>
+
+                <!-- Controles de animación temporal -->
+                <div class="animation-controls">
+                    <button id="playBtn" class="animation-btn play-btn">▶️ Play</button>
+                    <button id="pauseBtn" class="animation-btn pause-btn" style="display: none;">⏸️ Pause</button>
+                    <label for="speedControl">Velocidad:</label>
+                    <select id="speedControl" class="speed-select">
+                        <option value="2000">Lento</option>
+                        <option value="1000" selected>Normal</option>
+                        <option value="500">Rápido</option>
+                        <option value="200">Muy Rápido</option>
+                    </select>
+                    <span id="currentDate" class="current-date">Fecha: --</span>
+                </div>
+            </div>
+
+            <!-- Ventana Emergente para Comparar -->
+            <div id="compareModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Comparar Continentes</h3>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="compare-selects">
+                            <div class="select-group">
+                                <label for="continent1Select">Continente 1:</label>
+                                <select id="continent1Select">
+                                    <option value="">Seleccione continente</option>
+                                </select>
+                            </div>
+                            <div class="select-group">
+                                <label for="continent2Select">Continente 2:</label>
+                                <select id="continent2Select">
+                                    <option value="">Seleccione continente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button id="cancelCompare" class="btn btn-cancel">Cancelar</button>
+                            <button id="confirmCompare" class="btn btn-confirm">Comparar</button>
+                        </div>
+                        <div id="compareMessage" class="compare-message" style="display: none;">
+                            <p>✅ Comparación exitosa entre los continentes seleccionados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-content">
+                <svg id="svg1" width="100%" height="100%"></svg>
+            </div>
+        </div>
+        <div class="panel panel2">
+            <div class="panel-title"><span id="continentName2"></span></div>
+            <div class="panel-content">
+                <svg id="svg2" width="100%" height="100%"></svg>
+            </div>
+        </div>
+        <div class="panel panel3">
+            <div class="panel-title">Vista Geografica<span id="continentName3"></span></div>
+            <div class="panel-content">
+                <svg id="svg3" width="100%" height="1000%"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de las vistas -->
+    <script src="EventManager.js"></script>
+    <script src="vista1.js"></script>
+    <script src="vista2.js"></script>
+    <script src="vista3.js"></script>
+    <script src="comparacion.js"></script>
+    <script src="countryDetails.js"></script>
+
+    <script>
+        // Variables globales para compartir datos entre vistas
+        let covidData = [];
+        let currentContinent = '';
+        let filteredData = [];
+        let isUpdatingFromView = false;
+
+        // Función para cargar datos CSV
+        async function loadData() {
+            try {
+                const data = await d3.csv("owid-covid-data-procesado.csv");
+                covidData = data;
+                // Obtener continentes únicos
+                const continents = [...new Set(data.map(d => d.continent).filter(d => d && d.trim() !== ''))];
+                populateContinentSelect(continents);
+                console.log("Datos cargados:", data.length, "registros");
+                console.log("Continentes encontrados:", continents);
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+                document.getElementById("continentSelect").innerHTML = '<option value="">Error cargando datos</option>';
+            }
+        }
+
+        // Poblar el select de continentes (ahora oculto pero funcional)
+        function populateContinentSelect(continents) {
+            const select = document.getElementById("continentSelect");
+            select.innerHTML = '<option value="">Seleccione un continente</option>';
+            continents.forEach(continent => {
+                const option = document.createElement("option");
+                option.value = continent;
+                option.textContent = continent;
+                select.appendChild(option);
+            });
+        }
+
+        // FUNCIÓN MANTENIDA: Actualizar display visual del continente (OCULTA PERO FUNCIONAL)
+        function updateContinentDisplay(continent) {
+            const display = document.getElementById("continentDisplay");
+            const resetBtn = document.getElementById("resetSelection");
+
+            if (continent && continent.trim() !== '') {
+                if (display) display.textContent = continent;
+                if (display) display.className = "continent-display";
+                if (resetBtn) resetBtn.style.display = 'none'; // Siempre oculto
+            } else {
+                if (display) display.textContent = "Ningún continente seleccionado";
+                if (display) display.className = "continent-display no-selection";
+                if (resetBtn) resetBtn.style.display = 'none';
+            }
+        }
+
+        // Función para filtrar datos por continente
+        function filterDataByContinent(continent) {
+            if (!continent) {
+                filteredData = [];
+                return [];
+            }
+            filteredData = covidData.filter(d => d.continent === continent);
+            return filteredData;
+        }
+
+        // FUNCIÓN MODIFICADA: Actualizar todas las vistas
+        function updateAllViews(continent, fromView = false) {
+            if (isUpdatingFromView && fromView) return;
+
+            isUpdatingFromView = true;
+            currentContinent = continent;
+            const data = filterDataByContinent(continent);
+
+            // Si la actualización viene de una vista, actualizar el select HTML oculto
+            if (fromView) {
+                const select = document.getElementById("continentSelect");
+                if (select.value !== continent) {
+                    select.value = continent;
+                    console.log(`Continente actualizado desde vista: ${continent}`);
+                }
+            }
+
+            // Actualizar display visual del continente (OCULTO PERO FUNCIONAL)
+            updateContinentDisplay(continent);
+
+            // Actualizar títulos
+            document.getElementById("continentName2").textContent = continent || "Seleccione Continente";
+            document.getElementById("continentName3").textContent = continent || "Seleccione Continente";
+
+            // Actualizar cada vista con los datos filtrados
+            if (typeof updateVista1 === 'function') updateVista1(data, continent);
+            if (typeof updateVista2 === 'function') updateVista2(data, continent);
+            if (typeof updateVista3 === 'function') updateVista3(data, continent);
+
+            setTimeout(() => {
+                isUpdatingFromView = false;
+            }, 100);
+        }
+
+        // FUNCIÓN GLOBAL MANTENIDA: Para que las vistas puedan actualizar el continente
+        window.updateContinentFromView = function(continent) {
+            console.log(`Solicitud de cambio de continente desde vista: ${continent}`);
+            updateAllViews(continent, true);
+        };
+
+        // FUNCIÓN GLOBAL MANTENIDA: Para obtener los continentes disponibles
+        window.getAvailableContinents = function() {
+            const continents = [...new Set(covidData.map(d => d.continent).filter(d => d && d.trim() !== ''))];
+            return continents;
+        };
+
+        // FUNCIÓN GLOBAL MANTENIDA: Para obtener el continente actual
+        window.getCurrentContinent = function() {
+            return currentContinent;
+        };
+
+        // FUNCIÓN MANTENIDA: Limpiar selección (FUNCIONAL PERO OCULTA)
+        window.clearContinentSelection = function() {
+            updateAllViews('', false);
+        };
+
+        // Event listener para el documento
+        document.addEventListener('DOMContentLoaded', function () {
+            const select = document.getElementById("continentSelect");
+            const resetBtn = document.getElementById("resetSelection");
+
+            // Event listener para el select oculto (por compatibilidad)
+            select.addEventListener('change', function () {
+                if (!isUpdatingFromView) {
+                    updateAllViews(this.value, false);
+                }
+            });
+
+            // Event listener para el botón de reset (OCULTO PERO FUNCIONAL)
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    clearContinentSelection();
+                });
+            }
+
+            // Inicializar funcionalidad de comparación
+            if (typeof initComparacion === 'function') {
+                initComparacion();
+            }
+
+            // Inicializar controles de animación
+            initAnimationControls();
+        });
+
+        // Función para inicializar controles de animación
+        function initAnimationControls() {
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const speedControl = document.getElementById('speedControl');
+
+            playBtn.addEventListener('click', function () {
+                if (typeof startTimeAnimation === 'function') {
+                    startTimeAnimation();
+                }
+                if (typeof startVista1TimeAnimation === 'function') {
+                    startVista1TimeAnimation();
+                }
+                if (typeof window.startVista2TimeAnimation === 'function') {
+                    window.startVista2TimeAnimation();
+                }
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+            });
+
+            pauseBtn.addEventListener('click', function () {
+                if (typeof pauseTimeAnimation === 'function') {
+                    pauseTimeAnimation();
+                }
+                if (typeof pauseVista1TimeAnimation === 'function') {
+                    pauseVista1TimeAnimation();
+                }
+                if (typeof window.pauseVista2TimeAnimation === 'function') {
+                    window.pauseVista2TimeAnimation();
+                }
+                pauseBtn.style.display = 'none';
+                playBtn.style.display = 'inline-block';
+            });
+
+            speedControl.addEventListener('change', function () {
+                const newSpeed = parseInt(this.value);
+                if (typeof updateAnimationSpeed === 'function') {
+                    updateAnimationSpeed(newSpeed);
+                }
+                if (typeof updateVista1AnimationSpeed === 'function') {
+                    updateVista1AnimationSpeed(newSpeed);
+                }
+                if (typeof window.updateVista2AnimationSpeed === 'function') {
+                    window.updateVista2AnimationSpeed(newSpeed);
+                }
+            });
+        }
+
+        // Inicialización principal
+        window.addEventListener('load', function () {
+            loadData().then(() => {
+                setTimeout(() => {
+                    if (typeof initVista1 === 'function') initVista1();
+                    if (typeof initVista2 === 'function') initVista2();
+                    if (typeof initVista3 === 'function') initVista3();
+                }, 100);
+            });
+        });
+
+        // Manejar redimensionamiento
+        window.addEventListener('resize', function () {
+            d3.selectAll("svg").selectAll("*").remove();
+            setTimeout(() => {
+                if (typeof initVista1 === 'function') initVista1();
+                if (typeof initVista2 === 'function') initVista2();
+                if (typeof initVista3 === 'function') initVista3();
+                if (currentContinent) {
+                    updateAllViews(currentContinent);
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
