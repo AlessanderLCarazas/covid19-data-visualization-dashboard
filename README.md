@@ -202,23 +202,30 @@ Esta sección está pensada para incluir capturas del proyecto en tu portafolio 
 
 ### Vista general
 
-![Vista general del dashboard](screenshots/dashboard-general.png)
+<img width="1914" height="939" alt="image" src="https://github.com/user-attachments/assets/1962a935-46f6-4737-a2ea-c00acd6394f1" />
 
 ### Vista temporal
 
-![Vista temporal por continente](screenshots/vista-temporal.png)
+<img width="990" height="829" alt="image" src="https://github.com/user-attachments/assets/401a5ec1-b30a-45a3-9928-ea0afd8a799f" />
+<img width="971" height="821" alt="image" src="https://github.com/user-attachments/assets/fb6177ec-9b27-47d0-a50f-c7ba6c2e8f99" />
 
 ### Panel analítico
 
-![Panel de análisis COVID-19](screenshots/panel-analitico.png)
+<img width="905" height="450" alt="image" src="https://github.com/user-attachments/assets/8f811199-1f1a-48d8-8a23-f65985f34aeb" />
 
 ### Mapa interactivo
 
-![Mapa mundial interactivo](screenshots/mapa-interactivo.png)
+<img width="899" height="460" alt="image" src="https://github.com/user-attachments/assets/84bd53eb-2781-4894-8ebf-9dd09bbc0a56" />
+<img width="1186" height="791" alt="image" src="https://github.com/user-attachments/assets/d1aea706-7f47-47cc-aa8a-55cb3b16037b" />
 
 ### Comparación entre continentes
 
-![Comparación entre continentes](screenshots/comparacion-continentes.png)
+<img width="1197" height="692" alt="image" src="https://github.com/user-attachments/assets/c92539a9-87c4-40b8-a08b-ab6309da04bd" />
+<img width="1129" height="497" alt="image" src="https://github.com/user-attachments/assets/e12672e5-9014-47ec-a6dd-73f45fe825f9" />
+<img width="1166" height="507" alt="image" src="https://github.com/user-attachments/assets/f6300162-ce38-4073-af8a-dd5c19e63b35" />
+<img width="1164" height="517" alt="image" src="https://github.com/user-attachments/assets/0a532a42-0025-4ae8-89db-b68157a53ceb" />
+<img width="1086" height="452" alt="image" src="https://github.com/user-attachments/assets/5e4389c2-2198-4dae-b090-d36e11902b99" />
+
 
 ## Alcance académico y profesional
 
